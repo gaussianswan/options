@@ -13,7 +13,7 @@ def black_scholes_put_price(S: float, K: float, sigma: float, r: float, T: float
     d_one = d1(S, K, sigma, r, T)
     d_two = d2(S, K, sigma, r, T)
 
-    return S * np.exp(-q * T) * norm.cdf(1 - d_one) - K * np.exp(-r * T) * norm.cdf(1 - d_two)
+    return -S * np.exp(-q * T) * norm.cdf(-d_one) + K * np.exp(-r * T) * norm.cdf(-d_two)
 
 
 def d1(S: float, K: float, sigma: float, r: float, T: float) -> float:
