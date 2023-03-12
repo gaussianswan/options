@@ -22,20 +22,20 @@ class Position:
     def black_scholes_value(self, S: float, sigma: float, r: float, T: float = None, q: float = 0) -> float:
         return self.side.value * self.option.black_scholes_price(S, sigma, r, T, q)
 
-    def delta(self) -> float:
-        return self.side.value * self.quantity * self.option.delta()
+    def delta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.side.value * self.quantity * self.option.delta(S, sigma, r, T, q)
 
-    def gamma(self) -> float:
-        return self.side.value * self.quantity * self.option.gamma()
+    def gamma(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.side.value * self.quantity * self.option.gamma(S, sigma, r, T, q)
 
-    def vega(self) -> float:
-        return self.side.value * self.quantity * self.vega()
+    def vega(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.side.value * self.quantity * self.vega(S, sigma, r, T, q)
 
-    def rho(self) -> float:
-        return self.side.value * self.quantity * self.rho()
+    def rho(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.side.value * self.quantity * self.rho(S, sigma, r, T, q)
 
-    def theta(self) -> float:
-        return self.side.value * self.quantity * self.theta()
+    def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.side.value * self.quantity * self.theta(S, sigma, r, T, q)
 
 
 class Trade:
@@ -91,6 +91,21 @@ class Trade:
 
         return self.position.intrinsic_value(price=price)
 
+    def delta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.position.delta(S, sigma, r, T, q)
+
+    def gamma(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.position.gamma(S, sigma, r, T, q)
+
+    def vega(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.position.vega(S, sigma, r, T, q)
+
+    def rho(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.position.rho(S, sigma, r, T, q)
+
+    def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        return self.position.theta(S, sigma, r, T, q)
+
 class CombinationTrade:
 
     def __init__(self, trades: List[Trade]) -> None:
@@ -121,5 +136,6 @@ class CombinationTrade:
             strategy_profits += bs_profit
 
         return strategy_profits
+
 
 
