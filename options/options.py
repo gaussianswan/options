@@ -2,6 +2,7 @@ import numpy as np
 
 from options.funcs import time_to_expiry
 from options.models.pricing_models import black_scholes_call_price, black_scholes_put_price
+from options.models.greeks import delta_bs, gamma_bs, vega_bs, theta_bs, rho_bs
 from datetime import date
 from options.enums import OptionClass, OptionExerciseType
 
@@ -36,25 +37,62 @@ class CallOption:
 
         return vals
 
-    def delta(self) -> float:
-        #TODO
-        pass
+    def delta(self, S, sigma: float, r: float, T: float, q: float):
 
-    def gamma(self) -> float:
-        #TODO
-        pass
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            # Need to implement a method for getting the delta for american options that is not black scholes
+            delta = delta_bs(option_type='call', S = S, sigma = sigma, K = self.strike, r = r, T = T, q = q)
 
-    def vega(self) -> float:
-        #TODO
-        pass
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            delta = delta_bs(option_type='call', S = S, sigma = sigma, K = self.strike, r = r, T = T, q = q)
 
-    def rho(self) -> float:
-        #TODO
-        pass
+        return delta
 
-    def theta(self) -> float:
-        #TODO
-        pass
+    def gamma(self, S, sigma: float, r: float, T: float, q: float) -> float:
+
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            gamma = gamma_bs(S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            gamma = gamma_bs(S, self.strike, sigma, r, T, q)
+
+        return gamma
+
+    def vega(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            vega = vega_bs(S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            vega = vega_bs(S, self.strike, sigma, r, T, q)
+
+        return vega
+
+    def rho(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            rho = rho_bs('call', S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            rho = rho_bs('call', S, self.strike, sigma, r, T, q)
+
+        return rho
+
+    def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            theta = theta_bs('call', S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            theta = theta_bs('call', S, self.strike, sigma, r, T, q)
+
+        return theta
+
+    def __repr__(self) -> str:
+        if self.option_class == OptionClass.CALL:
+            option_letter = 'C'
+        elif self.option_class == OptionClass.PUT:
+            option_letter = 'P'
+
+        representation = f"{self.underlying} {self.strike} {option_letter} {str(self.expiry_date)}"
+        return representation
 
 class PutOption:
 
@@ -87,23 +125,60 @@ class PutOption:
             # TODO implement the american call option scheme
             black_scholes_put_price(S = S, K = self.strike, sigma = sigma, r = r, T = T, q = q)
 
-    def delta(self) -> float:
-        #TODO
-        pass
+    def delta(self, S, sigma: float, r: float, T: float, q: float):
 
-    def gamma(self) -> float:
-        #TODO
-        pass
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            # Need to implement a method for getting the delta for american options that is not black scholes
+            delta = delta_bs(option_type='put', S = S, sigma = sigma, K = self.strike, r = r, T = T, q = q)
 
-    def vega(self) -> float:
-        #TODO
-        pass
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            delta = delta_bs(option_type='put', S = S, sigma = sigma, K = self.strike, r = r, T = T, q = q)
 
-    def rho(self) -> float:
-        #TODO
-        pass
+        return delta
 
-    def theta(self) -> float:
-        #TODO
-        pass
+    def gamma(self, S, sigma: float, r: float, T: float, q: float) -> float:
 
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            gamma = gamma_bs(S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            gamma = gamma_bs(S, self.strike, sigma, r, T, q)
+
+        return gamma
+
+    def vega(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            vega = vega_bs(S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            vega = vega_bs(S, self.strike, sigma, r, T, q)
+
+        return vega
+
+    def rho(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            rho = rho_bs('put', S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            rho = rho_bs('put', S, self.strike, sigma, r, T, q)
+
+        return rho
+
+    def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
+        if self.exercise_type == OptionExerciseType.AMERICAN:
+            theta = theta_bs('put', S, self.strike, sigma, r, T, q)
+
+        elif self.exercise_type == OptionExerciseType.EUROPEAN:
+            theta = theta_bs('put', S, self.strike, sigma, r, T, q)
+
+        return theta
+
+    def __repr__(self) -> str:
+        if self.option_class == OptionClass.CALL:
+            option_letter = 'C'
+        elif self.option_class == OptionClass.PUT:
+            option_letter = 'P'
+
+        representation = f"{self.underlying} {self.strike} {option_letter} {str(self.expiry_date)}"
+
+        return representation
