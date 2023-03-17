@@ -7,11 +7,13 @@ from options.enums import TradeSide
 
 class Position:
 
-    def __init__(self, side: TradeSide, quantity: int, option: Union[CallOption, PutOption]) -> None:
+    def __init__(self, side: TradeSide, quantity: int, option: Union[CallOption, PutOption], cost: float = 0, transaction_cost: float = 0) -> None:
         self.side = side
         self.quantity = quantity
         self.option = option
         self.underlying = option.underlying
+        self.cost = cost
+        self.transaction_cost = transaction_cost
 
     def intrinsic_value(self, price: float) -> float:
         return self.side.value * self.quantity * self.option.intrinsic_value(price = price)
@@ -36,16 +38,6 @@ class Position:
 
     def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
         return self.side.value * self.quantity * self.theta(S, sigma, r, T, q)
-
-
-class Trade:
-
-    def __init__(self, side: TradeSide, quantity: int, option: Union[CallOption, PutOption], cost: float, transaction_cost: float = 0) -> None:
-        self.side = side
-        self.quantity = quantity
-        self.transaction_cost = transaction_cost
-        self.position = Position(side = side, quantity=quantity, option = option)
-        self.cost = cost
 
     def profit_at_expiry(self, price: float) -> float:
         """Calculates the profit at expiry for this trade
@@ -91,30 +83,15 @@ class Trade:
 
         return self.position.intrinsic_value(price=price)
 
-    def delta(self, S, sigma: float, r: float, T: float, q: float) -> float:
-        return self.position.delta(S, sigma, r, T, q)
+class Strategy:
 
-    def gamma(self, S, sigma: float, r: float, T: float, q: float) -> float:
-        return self.position.gamma(S, sigma, r, T, q)
-
-    def vega(self, S, sigma: float, r: float, T: float, q: float) -> float:
-        return self.position.vega(S, sigma, r, T, q)
-
-    def rho(self, S, sigma: float, r: float, T: float, q: float) -> float:
-        return self.position.rho(S, sigma, r, T, q)
-
-    def theta(self, S, sigma: float, r: float, T: float, q: float) -> float:
-        return self.position.theta(S, sigma, r, T, q)
-
-class CombinationTrade:
-
-    def __init__(self, trades: List[Trade]) -> None:
-        self.trades = trades
+    def __init__(self, positions: List[Position]) -> None:
+        self.positions = positions
 
     def profit_at_expiry(self, price: float) -> float:
 
         profit = 0
-        for trade in self.trades:
+        for trade in self.positions:
             profit += trade.profit_at_expiry(price=price)
 
         return profit
@@ -123,15 +100,27 @@ class CombinationTrade:
 
         profits = np.zeros(shape = prices.shape)
 
-        for trade in self.trades:
+        for trade in self.positions:
             profits += trade.profits_at_expiry(prices=prices)
 
         return profits
 
+    def calculate_total_cost(self) -> float:
+        """Calculates the total cost of the positions in this strategy. If the value is negative, then we got a credit from the position
+
+        Returns:
+            float: Total cost of the position
+        """
+
+        total_cost = 0
+        for position in self.positions:
+            total_cost += position.cost * position.side.value
+
+        return total_cost
 
     def black_scholes_profit_vary_underlying(self, S: np.array, sigma: float, r: float, T: float = None, q: float = 0):
         strategy_profits = np.zeros(shape = S.shape)
-        for trade in self.trades:
+        for trade in self.positions:
             bs_profit = trade.black_scholes_profit(S, sigma, r, T, q)
             strategy_profits += bs_profit
 
